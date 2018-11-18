@@ -1418,6 +1418,9 @@ namespace dxvk {
     enabled.core.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_FEATURES_2_KHR;
     enabled.core.pNext = nullptr;
 
+    enabled.extConditionalRendering.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_CONDITIONAL_RENDERING_FEATURES_EXT;
+    enabled.extConditionalRendering.pNext = nullptr;
+
     enabled.extTransformFeedback.sType = VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_TRANSFORM_FEEDBACK_FEATURES_EXT;
     enabled.extTransformFeedback.pNext = nullptr;
 
@@ -1434,6 +1437,7 @@ namespace dxvk {
       enabled.core.features.shaderClipDistance                    = VK_TRUE;
       enabled.core.features.shaderCullDistance                    = VK_TRUE;
       enabled.core.features.robustBufferAccess                    = VK_TRUE;
+      enabled.extConditionalRendering.conditionalRendering        = supported.extConditionalRendering.conditionalRendering;
     }
     
     if (featureLevel >= D3D_FEATURE_LEVEL_9_2) {
