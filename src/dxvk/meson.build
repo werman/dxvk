@@ -74,6 +74,7 @@ dxvk_src = files([
   'dxvk_pipecache.cpp',
   'dxvk_pipelayout.cpp',
   'dxvk_pipemanager.cpp',
+  'dxvk_predicate.cpp',
   'dxvk_queue.cpp',
   'dxvk_renderpass.cpp',
   'dxvk_resource.cpp',
