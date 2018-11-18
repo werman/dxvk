@@ -15,6 +15,7 @@
 #include "dxvk_meta_resolve.h"
 #include "dxvk_pipecache.h"
 #include "dxvk_pipemanager.h"
+#include "dxvk_predicate.h"
 #include "dxvk_util.h"
 
 namespace dxvk {

@@ -19,6 +19,7 @@ namespace dxvk {
     m_pipelineManager   (new DxvkPipelineManager    (this, m_renderPassPool.ptr())),
     m_gpuEventPool      (new DxvkGpuEventPool       (vkd)),
     m_gpuQueryPool      (new DxvkGpuQueryPool       (vkd)),
+    m_predicatePool     (new DxvkPredicatePool      (this)),
     m_metaClearObjects  (new DxvkMetaClearObjects   (vkd)),
     m_metaCopyObjects   (new DxvkMetaCopyObjects    (vkd)),
     m_metaMipGenObjects (new DxvkMetaMipGenObjects  (vkd)),
@@ -194,6 +195,11 @@ namespace dxvk {
     const Rc<DxvkImage>&            image,
     const DxvkImageViewCreateInfo&  createInfo) {
     return new DxvkImageView(m_vkd, image, createInfo);
+  }
+
+
+  Rc<DxvkPredicate> DxvkDevice::createPredicate() {
+    return m_predicatePool->createPredicate();
   }
   
   
