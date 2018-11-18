@@ -211,6 +211,13 @@ namespace dxvk {
       m_vkd->vkUpdateDescriptorSetWithTemplateKHR(m_vkd->device(),
         descriptorSet, descriptorTemplate, data);
     }
+
+
+    void cmdBeginConditionalRendering(
+      const VkConditionalRenderingBeginInfoEXT* pConditionalRenderingBegin) {
+      m_vkd->vkCmdBeginConditionalRenderingEXT(
+        m_execBuffer, pConditionalRenderingBegin);
+    }
     
     
     void cmdBeginQuery(
@@ -486,6 +493,11 @@ namespace dxvk {
     }
     
     
+    void cmdEndConditionalRendering() {
+      m_vkd->vkCmdEndConditionalRenderingEXT(m_execBuffer);
+    }
+
+
     void cmdEndQuery(
             VkQueryPool             queryPool,
             uint32_t                query) {

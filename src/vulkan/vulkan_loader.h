@@ -287,6 +287,11 @@ namespace dxvk::vk {
     VULKAN_FN(vkGetImageMemoryRequirements2KHR);
     #endif
 
+    #ifdef VK_EXT_conditional_rendering
+    VULKAN_FN(vkCmdBeginConditionalRenderingEXT);
+    VULKAN_FN(vkCmdEndConditionalRenderingEXT);
+    #endif
+
     #ifdef VK_EXT_transform_feedback
     VULKAN_FN(vkCmdBindTransformFeedbackBuffersEXT);
     VULKAN_FN(vkCmdBeginTransformFeedbackEXT);
