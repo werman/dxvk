@@ -97,6 +97,10 @@ namespace dxvk {
     bool operator == (std::nullptr_t) const { return m_object == nullptr; }
     bool operator != (std::nullptr_t) const { return m_object != nullptr; }
     
+    size_t hash() const {
+      return reinterpret_cast<size_t>(m_object);
+    }
+
   private:
     
     T* m_object = nullptr;
