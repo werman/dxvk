@@ -2356,6 +2356,10 @@ namespace dxvk {
 
 
   void DxvkContext::updatePredicateBuffers() {
+    // FIXME figure out why synchronization doesn't work.
+    // Currently we have to flush after this command and
+    // allocate the conditional buffer on a host-visible
+    // memory type, or otherwise results won't be visible..
     for (const auto& pair : m_predicates) {
       DxvkGpuQueryHandle query = pair.second->handle();
       DxvkDescriptorInfo buffer = pair.first->getDescriptor();
