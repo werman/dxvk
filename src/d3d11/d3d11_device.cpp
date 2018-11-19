@@ -1015,7 +1015,7 @@ namespace dxvk {
       return S_FALSE;
     
     try {
-      *ppQuery = ref(new D3D11Query(this, *pQueryDesc));
+      *ppQuery = ref(new D3D11Query(this, *pQueryDesc, false));
       return S_OK;
     } catch (const DxvkError& e) {
       Logger::err(e.message());
@@ -1036,7 +1036,7 @@ namespace dxvk {
       return S_FALSE;
     
     try {
-      *ppPredicate = ref(new D3D11Query(this, *pPredicateDesc));
+      *ppPredicate = ref(new D3D11Query(this, *pPredicateDesc, true));
       return S_OK;
     } catch (const DxvkError& e) {
       Logger::err(e.message());

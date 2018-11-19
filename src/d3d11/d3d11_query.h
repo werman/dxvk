@@ -2,6 +2,7 @@
 
 #include "../dxvk/dxvk_gpu_event.h"
 #include "../dxvk/dxvk_gpu_query.h"
+#include "../dxvk/dxvk_predicate.h"
 
 #include "../d3d10/d3d10_query.h"
 
@@ -15,7 +16,8 @@ namespace dxvk {
     
     D3D11Query(
             D3D11Device*      device,
-      const D3D11_QUERY_DESC& desc);
+      const D3D11_QUERY_DESC& desc,
+            bool              predicate);
     
     ~D3D11Query();
     
@@ -34,10 +36,14 @@ namespace dxvk {
     void Begin(DxvkContext* ctx);
     
     void End(DxvkContext* ctx);
-    
+
     HRESULT STDMETHODCALLTYPE GetData(
             void*                             pData,
             UINT                              GetDataFlags);
+    
+    Rc<DxvkPredicate> GetPredicate() const {
+      return m_pred;
+    }
     
     D3D10Query* GetD3D10Iface() {
       return &m_d3d10;
@@ -50,6 +56,7 @@ namespace dxvk {
     
     Rc<DxvkGpuQuery>  m_query = nullptr;
     Rc<DxvkGpuEvent>  m_event = nullptr;
+    Rc<DxvkPredicate> m_pred  = nullptr;
     
     uint32_t m_revision = 0;
 

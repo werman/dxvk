@@ -5,7 +5,8 @@ namespace dxvk {
   
   D3D11Query::D3D11Query(
           D3D11Device*      device,
-    const D3D11_QUERY_DESC& desc)
+    const D3D11_QUERY_DESC& desc,
+          bool              predicate)
   : m_device(device), m_desc(desc),
     m_d3d10(this, device->GetD3D10Interface()) {
     Rc<DxvkDevice> dxvkDevice = m_device->GetDXVKDevice();
@@ -71,6 +72,9 @@ namespace dxvk {
       default:
         throw DxvkError(str::format("D3D11: Unhandled query type: ", desc.Query));
     }
+
+    if (predicate)
+      m_pred = dxvkDevice->createPredicate();
   }
   
   
@@ -98,7 +102,7 @@ namespace dxvk {
       return S_OK;
     }
     
-    if (m_desc.Query == D3D11_QUERY_OCCLUSION_PREDICATE) {
+    if (m_pred != nullptr) {
       if (riid == __uuidof(ID3D11Predicate)) {
         *ppvObject = ref(this);
         return S_OK;
@@ -195,9 +199,12 @@ namespace dxvk {
       default:
         ctx->endQuery(m_query);
     }
+
+    if (m_pred != nullptr && m_query != nullptr)
+      ctx->updatePredicate(m_pred, m_query);
   }
-  
-  
+
+
   HRESULT STDMETHODCALLTYPE D3D11Query::GetData(
           void*                             pData,
           UINT                              GetDataFlags) {
