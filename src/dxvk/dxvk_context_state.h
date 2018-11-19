@@ -8,6 +8,7 @@
 #include "dxvk_image.h"
 #include "dxvk_limits.h"
 #include "dxvk_pipelayout.h"
+#include "dxvk_predicate.h"
 #include "dxvk_sampler.h"
 #include "dxvk_shader.h"
 
@@ -34,6 +35,7 @@ namespace dxvk {
     GpDirtyIndexBuffer,         ///< Index buffer binding are out of date
     GpDirtyXfbBuffers,          ///< Transform feedback buffer bindings are out of date
     GpDirtyXfbCounters,         ///< Counter buffer values are dirty
+    GpDirtyPredicate,           ///< Predicate has changed while rendering
     GpDirtyBlendConstants,      ///< Blend constants have changed
     GpDirtyStencilRef,          ///< Stencil reference has changed
     GpDirtyViewport,            ///< Viewport state has changed
@@ -46,6 +48,8 @@ namespace dxvk {
     CpDirtyDescriptorSet,       ///< Compute descriptor set needs to be updated
 
     DirtyDrawBuffer,            ///< Indirect argument buffer is dirty
+
+    ConditionalRendering,       ///< Conditional rendering is enabled
   };
   
   using DxvkContextFlags = Flags<DxvkContextFlag>;
@@ -88,6 +92,12 @@ namespace dxvk {
     
     DxvkBlendConstants  blendConstants    = { 0.0f, 0.0f, 0.0f, 0.0f };
     uint32_t            stencilReference  = 0;
+  };
+
+
+  struct DxvkPredicateState {
+    Rc<DxvkPredicate>              predicate = nullptr;
+    VkConditionalRenderingFlagsEXT flags     = 0;
   };
 
 
@@ -135,6 +145,7 @@ namespace dxvk {
     DxvkViewportState         vp;
     DxvkDynamicDepthState     ds;
     DxvkOutputMergerState     om;
+    DxvkPredicateState        cr;
     DxvkXfbState              xfb;
     
     DxvkGraphicsPipelineState gp;

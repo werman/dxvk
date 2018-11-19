@@ -1,5 +1,7 @@
 #pragma once
 
+#include <unordered_map>
+
 #include "dxvk_barrier.h"
 #include "dxvk_bind_mask.h"
 #include "dxvk_cmdlist.h"
@@ -656,6 +658,30 @@ namespace dxvk {
             VkDeviceSize              pitchPerLayer);
     
     /**
+     * \brief Updates a predicate buffer
+     * 
+     * Copies the passed sample count of an occlusion
+     * query to the predicate buffer. This operation
+     * gets optimized internally in an attempt to save
+     * GPU resources.
+     */
+    void updatePredicate(
+      const Rc<DxvkPredicate>&        predicate,
+      const Rc<DxvkGpuQuery>&         query);
+    
+    /**
+     * \brief Enables conditional rendering
+     * 
+     * Conditional Rendering can prevent draw and
+     * dispatch calls from being executed on the GPU.
+     * \param [in] predicate The predicate
+     * \param [in] flags Predication flags
+     */
+    void setPredicate(
+      const Rc<DxvkPredicate>&             predicate,
+            VkConditionalRenderingFlagsEXT flags);
+    
+    /**
      * \brief Sets viewports
      * 
      * \param [in] viewportCount Number of viewports
@@ -798,6 +824,11 @@ namespace dxvk {
     std::array<DxvkShaderResourceSlot, MaxNumResourceSlots>  m_rc;
     std::array<DxvkDescriptorInfo,     MaxNumActiveBindings> m_descInfos;
     std::array<uint32_t,               MaxNumActiveBindings> m_descOffsets;
+
+    std::unordered_map<
+      Rc<DxvkPredicate>,
+      Rc<DxvkGpuQuery>,
+      DxvkHash> m_predicates;
     
     void clearImageViewFb(
       const Rc<DxvkImageView>&    imageView,
@@ -842,6 +873,8 @@ namespace dxvk {
       const VkImageSubresourceLayers& srcSubresources,
             VkFormat                  format);
     
+    void updatePredicateBuffers();
+    
     void startRenderPass();
     void spillRenderPass();
     
@@ -859,6 +892,9 @@ namespace dxvk {
     
     void startTransformFeedback();
     void pauseTransformFeedback();
+    
+    void startConditionalRendering();
+    void pauseConditionalRendering();
     
     void unbindComputePipeline();
     void updateComputePipeline();
@@ -895,6 +931,8 @@ namespace dxvk {
     
     void updateTransformFeedbackBuffers();
     void updateTransformFeedbackState();
+
+    void updateConditionalRenderingState();
 
     void updateDynamicState();
     
