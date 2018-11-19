@@ -397,6 +397,20 @@ namespace dxvk {
         srcImage, srcImageLayout, dstBuffer,
         regionCount, pRegions);
     }
+
+
+    void cmdCopyQueryPoolResults(
+            VkQueryPool             queryPool,
+            uint32_t                firstQuery,
+            uint32_t                queryCount,
+            VkBuffer                dstBuffer,
+            VkDeviceSize            dstOffset,
+            VkDeviceSize            stride,
+            VkQueryResultFlags      flags) {
+      m_vkd->vkCmdCopyQueryPoolResults(m_execBuffer,
+        queryPool, firstQuery, queryCount,
+        dstBuffer, dstOffset, stride, flags);
+    }
     
     
     void cmdDispatch(
