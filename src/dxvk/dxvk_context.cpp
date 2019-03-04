@@ -69,6 +69,7 @@ namespace dxvk {
     
     m_barriers.recordCommands(m_cmd);
 
+    m_queryManager.resetQueries(m_cmd);
     m_cmd->endRecording();
     return std::exchange(m_cmd, nullptr);
   }

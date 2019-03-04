@@ -548,14 +548,8 @@ namespace dxvk {
             VkEvent                 event) {
       m_cmdBuffersUsed.set(DxvkCmdBufferFlag::InitBuffer);
 
-      m_vkd->vkResetEvent(
-        m_vkd->device(), event);
-      
       m_vkd->vkCmdResetQueryPool(
         m_initBuffer, queryPool, queryId, 1);
-      
-      m_vkd->vkCmdSetEvent(m_initBuffer,
-        event, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
     }
     
     
@@ -567,6 +561,15 @@ namespace dxvk {
       
       m_vkd->vkCmdResetQueryPool(m_initBuffer,
         queryPool, firstQuery, queryCount);
+    }
+
+
+    void cmdSignalQueryPoolReset(
+            VkEvent                 event) {
+      m_cmdBuffersUsed.set(DxvkCmdBufferFlag::InitBuffer);
+
+      m_vkd->vkCmdSetEvent(m_initBuffer,
+        event, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
     }
     
     

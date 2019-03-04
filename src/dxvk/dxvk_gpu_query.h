@@ -1,6 +1,7 @@
 #pragma once
 
 #include <mutex>
+#include <queue>
 #include <vector>
 
 #include "dxvk_resource.h"
@@ -109,6 +110,42 @@ namespace dxvk {
 
 
   /**
+   * \brief Query reset event
+   */
+  class DxvkGpuQueryResetEvent : public RcObject {
+
+  public:
+
+    DxvkGpuQueryResetEvent(
+      const Rc<vk::DeviceFn>&   vkd);
+    
+    ~DxvkGpuQueryResetEvent();
+
+    VkEvent handle() const {
+      return m_event;
+    }
+
+    uint32_t frame() const {
+      return m_frame;
+    }
+
+    bool test();
+
+    bool test(uint32_t frame);
+
+    void reset();
+
+  private:
+
+    Rc<vk::DeviceFn>  m_vkd;
+    sync::Spinlock    m_lock;
+    VkEvent           m_event;
+    uint32_t          m_frame;
+
+  };
+
+
+  /**
    * \brief Query object
    * 
    * Manages Vulkan queries that are sub-allocated
@@ -212,9 +249,11 @@ namespace dxvk {
      * retrieving query data. A query can have
      * multiple handles attached.
      * \param [in] handle The query handle
+     * \param [in] reset Reset event
      */
     void addQueryHandle(
-      const DxvkGpuQueryHandle& handle);
+      const DxvkGpuQueryHandle&         handle,
+      const Rc<DxvkGpuQueryResetEvent>& reset);
 
   private:
 
@@ -228,6 +267,9 @@ namespace dxvk {
     DxvkGpuQueryHandle  m_handle;
     
     std::vector<DxvkGpuQueryHandle> m_handles;
+
+    Rc<DxvkGpuQueryResetEvent> m_resetEvent = nullptr;
+    uint32_t                   m_resetFrame = 0;
     
     DxvkGpuQueryStatus getDataForHandle(
             DxvkQueryData&      queryData,
@@ -311,12 +353,27 @@ namespace dxvk {
      */
     DxvkGpuQueryHandle allocQuery(VkQueryType type);
 
+    /**
+     * \brief Allocates a query reset event
+     *
+     * Returns an event in reset state. Events are
+     * internally recycled, so this may return an
+     * old event with a new generation number.
+     * \returns A query reset event
+     */
+    Rc<DxvkGpuQueryResetEvent> allocResetEvent();
+
   private:
+
+    Rc<vk::DeviceFn>      m_vkd;
 
     DxvkGpuQueryAllocator m_occlusion;
     DxvkGpuQueryAllocator m_statistic;
     DxvkGpuQueryAllocator m_timestamp;
     DxvkGpuQueryAllocator m_xfbStream;
+
+    std::mutex                              m_resetMutex;
+    std::vector<Rc<DxvkGpuQueryResetEvent>> m_resetEvents;
 
   };
 
@@ -394,12 +451,20 @@ namespace dxvk {
     void endQueries(
       const Rc<DxvkCommandList>&  cmd,
             VkQueryType           type);
+    
+    /**
+     * \brief Signals query reset event
+     * \param [in] cmd Command list
+     */
+    void resetQueries(
+      const Rc<DxvkCommandList>&  cmd);
 
   private:
 
     Rc<DxvkGpuQueryPool>          m_pool;
     uint32_t                      m_activeTypes;
     std::vector<Rc<DxvkGpuQuery>> m_activeQueries;
+    Rc<DxvkGpuQueryResetEvent>    m_resetEvent;
 
     void beginSingleQuery(
       const Rc<DxvkCommandList>&  cmd,
