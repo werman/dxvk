@@ -385,10 +385,7 @@ namespace dxvk {
     query->addQueryHandle(handle, m_resetEvent);
     query->end();
 
-    cmd->cmdResetQuery(
-      handle.queryPool,
-      handle.queryId,
-      handle.resetEvent);
+    m_resetQueries.push_back(handle);
     
     cmd->cmdWriteTimestamp(
       VK_PIPELINE_STAGE_ALL_COMMANDS_BIT,
@@ -425,8 +422,40 @@ namespace dxvk {
 
   void DxvkGpuQueryManager::resetQueries(
     const Rc<DxvkCommandList>&  cmd) {
+    VkQueryPool queryPool = VK_NULL_HANDLE;
+    uint32_t queryLo = 0;
+    uint32_t queryHi = 0;
+
+    auto sortFn = [] (const DxvkGpuQueryHandle& a, const DxvkGpuQueryHandle& b) {
+      if (a.queryPool < b.queryPool) return true;
+      if (a.queryPool > b.queryPool) return false;
+      return a.queryId < b.queryId;
+    };
+
+    std::make_heap(m_resetQueries.begin(), m_resetQueries.end(), sortFn);
+    std::sort_heap(m_resetQueries.begin(), m_resetQueries.end(), sortFn);
+
+    for (const auto& handle : m_resetQueries) {
+      if (handle.queryPool != queryPool
+       || handle.queryId   != queryHi) {
+        if (queryPool)
+          cmd->cmdResetQueryPool(queryPool, queryLo, queryHi - queryLo);
+
+        queryPool = handle.queryPool;
+        queryLo   = handle.queryId;
+        queryHi   = handle.queryId + 1;
+      } else {
+        queryHi++;
+      }
+    }
+
+    if (queryPool)
+      cmd->cmdResetQueryPool(queryPool, queryLo, queryHi - queryLo);
+    
     cmd->cmdSignalQueryPoolReset(m_resetEvent->handle());
+
     m_resetEvent = m_pool->allocResetEvent();
+    m_resetQueries.clear();
   }
 
 
@@ -435,10 +464,7 @@ namespace dxvk {
     const Rc<DxvkGpuQuery>&     query) {
     DxvkGpuQueryHandle handle = m_pool->allocQuery(query->type());
     
-    cmd->cmdResetQuery(
-      handle.queryPool,
-      handle.queryId,
-      handle.resetEvent);
+    m_resetQueries.push_back(handle);
     
     if (query->isIndexed()) {
       cmd->cmdBeginQueryIndexed(

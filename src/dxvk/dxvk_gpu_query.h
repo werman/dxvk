@@ -465,6 +465,8 @@ namespace dxvk {
     uint32_t                      m_activeTypes;
     std::vector<Rc<DxvkGpuQuery>> m_activeQueries;
     Rc<DxvkGpuQueryResetEvent>    m_resetEvent;
+    
+    std::vector<DxvkGpuQueryHandle> m_resetQueries;
 
     void beginSingleQuery(
       const Rc<DxvkCommandList>&  cmd,
