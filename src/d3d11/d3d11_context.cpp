@@ -3255,13 +3255,30 @@ namespace dxvk {
   void D3D11DeviceContext::BindConstantBuffer(
           UINT                              Slot,
     const D3D11ConstantBufferBinding*       pBufferBinding) {
+
+    DxvkBufferSlice bufferSlice;
+
+    if (pBufferBinding->buffer != nullptr) {
+      const UINT offset = pBufferBinding->constantOffset * 16;
+      const UINT count  = pBufferBinding->constantCount  * 16;
+
+      // From VSSetConstantBuffers1 documentation:
+      // The values in the elements of the pFirstConstant and pFirstConstant + pNumConstants
+      // arrays can exceed the length of each buffer; from the shader's point of view,
+      // the constant buffer is the intersection of the actual memory allocation for the buffer
+      // and the window [value in an element of pFirstConstant, value in an element of
+      // pFirstConstant + value in an element of pNumConstants].
+
+      const VkDeviceSize bufferSize = pBufferBinding->buffer->Desc()->ByteWidth;
+      if (offset + count <= bufferSize)
+        bufferSlice = pBufferBinding->buffer->GetBufferSlice(offset, count);
+      else if (offset < bufferSize && offset + count > bufferSize)
+        bufferSlice = pBufferBinding->buffer->GetBufferSlice(offset, bufferSize - offset);
+    }
+
     EmitCs([
       cSlotId      = Slot,
-      cBufferSlice = pBufferBinding->buffer != nullptr
-        ? pBufferBinding->buffer->GetBufferSlice(
-            pBufferBinding->constantOffset * 16,
-            pBufferBinding->constantCount  * 16)
-        : DxvkBufferSlice()
+      cBufferSlice = bufferSlice
     ] (DxvkContext* ctx) {
       ctx->bindResourceBuffer(cSlotId, cBufferSlice);
     });
